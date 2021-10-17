@@ -35,3 +35,15 @@ package manager does [here](https://github.com/UCLA-Creative-Labs/internal-docs/
 ```
 npm install -g yarn
 ```
+
+## Create Next App
+
+Now let's create our `next.js` app. We can do that easily with the following command:
+
+```sh
+npx create-next-app --ts
+# or
+yarn create next-app --typescript
+
+cd [app-name]
+```
