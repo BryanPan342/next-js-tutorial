@@ -47,3 +47,79 @@ yarn create next-app --typescript
 
 cd [app-name]
 ```
+
+## Clean Up
+
+Now let's clean up some stuff in this repository..
+
+Let's delete the following:
+
+* `/pages/api`
+* `/public/vercel.svg`
+
+Replace the `Home.module.css` file with the following contents:
+
+```css
+.container {
+  height: 100%;
+  width: 100%;
+  padding: 40px 40px;
+  display: flex;
+  flex-direction: column;
+}
+```
+
+## Create Redirection
+
+```sh
+yarn add -D dotenv
+
+# Add the following to your package manager scripts
+# package.json
+{
+  "scripts": {
+    "prebuild": "node scripts/prebuild.js",
+    ...
+  }
+}
+
+# gitignore generated files
+# .gitignore
+_redirects
+```
+
+With the contents of your prebuild file as the following:
+
+```js
+const { writeFileSync } = require('fs');
+const path = require('path');
+const fetch = require('node-fetch');
+require('dotenv').config({path: `${__dirname}/../.env.local`});
+
+const contentfulQuery = `{
+  redirectCollection {
+    items {
+      url
+      redirectPath
+    }
+  }
+}`;
+
+const main = async () => {
+  const contentfulRes = await fetch(`https://graphql.contentful.com/content/v1/spaces/${process.env.SPACE_ID}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`,
+    },
+    body: JSON.stringify({ query: contentfulQuery }),
+  });
+  const {data} = await contentfulRes.json();
+  const redirects = data.redirectCollection.items.reduce((acc, {redirectPath, url}) => {
+    return `${acc}/${redirectPath} ${url}\n`;
+  }, '');
+  writeFileSync(path.resolve(__dirname, '../_redirects'), redirects);
+}
+
+main();
+```
